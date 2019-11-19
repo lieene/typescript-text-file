@@ -1,6 +1,6 @@
 {
   "name": "text-file",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "text file accessor",
   "main": "out/index.js",
   "types": "out/index.d.ts",
