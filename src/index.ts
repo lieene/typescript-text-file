@@ -3,7 +3,7 @@
 // Author: Lieene Guo                                                              //
 // MIT License, Copyright (c) 2019 Lieene@ShadeRealm                               //
 // Created Date: Fri Nov 8 2019                                                    //
-// Last Modified: Tue Nov 19 2019                                                  //
+// Last Modified: Wed Nov 20 2019                                                  //
 // Modified By: Lieene Guo                                                         //
 
 import * as L from "@lieene/ts-utility";
@@ -64,7 +64,7 @@ export class Text implements Text.Readonly
     {
         let lineCount = this.lineCount;
         let range = this.lineRange(lineCount)!;
-        return { line: lineCount, col: range.end };
+        return { line: lineCount, col: range.length + 1 };
     }
 
     lineRange(line: number): L.Range | undefined 
@@ -80,6 +80,19 @@ export class Text implements Text.Readonly
         //else end===start empty line, end<start will nerver happen
         return L.StartEnd(start, end);
     }
+    
+    lineEndColum(line: number): number | undefined 
+    {
+        let anchors = this.lineAnchors;
+        let lineCount = this.lineCount;
+        if (line < 1 || line > lineCount) { return undefined; }
+        let start = anchors[line - 1];
+        let end = anchors[line];
+        let src = this.source;
+        if (end > start)// avoid line feeds
+        { end = src[end - 1] === '\n' ? src[end - 2] === '\r' ? end - 1 : end : end + 1; }
+    }
+
 
     lineString(line: number): string | undefined 
     {
@@ -91,7 +104,7 @@ export class Text implements Text.Readonly
     {
         let range = this.lineRange(line);
         if (range === undefined) { return undefined; }
-        return { index: line, range, text: this.source.slice(range.start, range.end) };
+        return { line, endColum: range.length + 1, range, text: this.source.slice(range.start, range.end) };
     }
 
     slice(span: Text.Span): string;
@@ -100,12 +113,13 @@ export class Text implements Text.Readonly
     {
         if (L.IsNumber(arg0))
         {
-            arg0 = Math.min(arg0, 1) >>> 0;
-            arg1 = Math.min(arg1 as number, 0) >>> 0;
-            if (arg1 = 0) { return ''; }
-            let endLine = Math.min(this.lineCount, arg0 + arg1);
+            arg0 = Math.max(arg0, 1) >>> 0;
+            arg1 = Math.max(arg1 as number, 0) >>> 0;
+            if (arg1 === 0) { return ''; }
+            let startLine = Math.min(this.lineCount, arg0 - 1);
+            let endLine = Math.min(this.lineCount, startLine + arg1);
             let lineAnchors = this.lineAnchors;
-            return this.source.slice(lineAnchors[arg0 - 1], lineAnchors[endLine]);
+            return this.source.slice(lineAnchors[startLine], lineAnchors[endLine]);
         }
         else
         {
@@ -134,7 +148,7 @@ export class Text implements Text.Readonly
             //which is filtered in the begining
             if (anchorIdx >= anchors.length) { return this.eof; }
             let range = this.lineRange(anchorIdx)!;
-            return { line: anchorIdx, col: Math.min(pos - range.start, range.length) };
+            return { line: anchorIdx, col: Math.min((pos - range.start) + 1, range.length + 1) };
         }
         else
         {
@@ -157,8 +171,9 @@ export namespace Text
         readonly eof: Pos;
         lineRange(line: number): L.Range | undefined;
         lineString(line: number): string | undefined;
+        lineEndColum(line: number): number | undefined;
         LineAt(line: number): Line | undefined;
-        slice(start: Span, end: Span): string;
+        slice(span: Span): string;
         slice(startLine: number, lineCount: number): string;
         convertPos(offset: number): Text.Pos;
         convertPos(pos: Text.Pos): number;
@@ -183,8 +198,9 @@ export namespace Text
 
     export interface Line
     {
-        readonly index: number;
-        readonly range: L.Range;
+        readonly line: number;
+        readonly endColum: number;
         readonly text: string;
+        readonly range: L.Range;
     }
 }
