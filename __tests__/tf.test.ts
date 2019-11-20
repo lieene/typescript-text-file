@@ -1,9 +1,11 @@
 import { Text } from "../src/index";
 import * as path from "path";
-test("text file test", () =>
+test("text file test", async () =>
 {
-    let t: Text.Readonly = new Text(__filename, "Path");
-    //console.log(t.source);
-    console.log(t);
-    console.log(t.slice(1,2));
+    let t = new Text(__filename, "Path").AsReadonly;
+    let newText = await t.BeginEdit(e =>
+    {
+        e.insert(0, "Here comes the edit\n");
+    });
+    console.log(newText);
 });
