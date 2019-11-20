@@ -1,5 +1,5 @@
 {
-  "name": "text-file",
+  "name": "text-editing",
   "version": "1.0.2",
   "description": "text file accessor",
   "main": "out/index.js",
