@@ -3,7 +3,7 @@
 // Author: Lieene Guo                                                              //
 // MIT License, Copyright (c) 2019 Lieene@ShadeRealm                               //
 // Created Date: Wed Nov 20 2019                                                   //
-// Last Modified: Thu Nov 21 2019                                                  //
+// Last Modified: Tue Nov 26 2019                                                  //
 // Modified By: Lieene Guo                                                         //
 import { Text } from "../src/index";
 import * as L from "@lieene/ts-utility";

@@ -3,7 +3,7 @@
 // Author: Lieene Guo                                                              //
 // MIT License, Copyright (c) 2019 Lieene@ShadeRealm                               //
 // Created Date: Fri Nov 8 2019                                                    //
-// Last Modified: Fri Nov 22 2019                                                  //
+// Last Modified: Tue Nov 26 2019                                                  //
 // Modified By: Lieene Guo                                                         //
 
 import * as L from '@lieene/ts-utility';
@@ -165,18 +165,20 @@ export class Text implements Text.ReadonlyText
     {
       let edits: Array<Text.Edit> = (editor as any).edits;
       let oldText = text.source;
-      let newText = '';
-      let preEnd = oldText.length;
+      let out: string[] = [];
+      //let preEnd = oldText.length;
+      let preEnd = 0;
+      let eof = oldText.length;
       for (let i = 0, len = edits.length; i < len; i++)
       {
         let e = edits[i];
-        let endOfEdit = e.range.end;
-        if (endOfEdit < preEnd) { newText = oldText.slice(endOfEdit, preEnd) + newText; }
-        if (e.replace.length > 0) { newText = e.replace + newText; }
-        preEnd = e.range.start;
+        let beginOfEdit = e.range.start;
+        if (beginOfEdit > preEnd) { out.push(oldText.slice(preEnd, beginOfEdit)); }
+        if (e.replace.length > 0) { out.push(e.replace); }
+        preEnd = e.range.end;
       }
-      if (preEnd > 0) { newText = oldText.slice(0, preEnd) + newText; }
-      callback(null as any, new Text(newText));
+      if (preEnd < eof) { out.push(oldText.slice(preEnd, eof)); }
+      callback(null as any, new Text(out.join('')));
     }
     catch (e) { callback(e, null as any); }
   }
@@ -237,7 +239,7 @@ export namespace Text
 
   export interface Edit { range: L.Range; replace: string; }
 
-  export function compareEdit(a: Edit, b: Edit): number { return b.range.start - a.range.start; }
+  export function compareEdit(a: Edit, b: Edit): number { return a.range.start - b.range.start; }
 
   export class TextEdit
   {
